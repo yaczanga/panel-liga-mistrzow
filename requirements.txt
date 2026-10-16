@@ -1,0 +1,18 @@
+# Wersje jak w środowisku, w którym wyniki w reports/ zostały policzone.
+pandas==3.0.3
+numpy==2.5.0
+scipy==1.18.0
+
+# Probit, efekty cząstkowe (AME), testy Walda, interfejs formuł.
+statsmodels==0.14.6
+patsy==1.0.2
+
+matplotlib==3.11.0
+
+# Środowisko notebooka.
+ipykernel==7.3.0
+ipython==9.14.1
+
+# seleniumbase i lxml są potrzebne WYŁĄCZNIE w notebooks/01_pobranie_plac.ipynb
+# i świadomie nie są tu wymienione: analiza działa na zapisanym pliku
+# data/raw/place_top4_ligi_2013_2023.csv. Instalacja w komórce tego notebooka.

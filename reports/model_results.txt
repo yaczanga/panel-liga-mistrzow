@@ -1,0 +1,115 @@
+Panel: 858 obserwacji
+Proba estymacyjna: 726 obs., 115 klubow, 4 ligi
+                obs  klubow  kwal_rate
+league                                
+Bundesliga      169      26      0.231
+La_Liga         187      30      0.214
+Premier_League  186      31      0.215
+Serie_A         184      28      0.217
+
+=== Empiryczna macierz przejsc stanu kwalifikacji ===
+Y          0      1
+Y_lag              
+0.0    0.917  0.083
+1.0    0.300  0.700
+
+=== Model glowny: dynamiczny probit CRE ===
+                          Probit Regression Results                           
+==============================================================================
+Dep. Variable:                      Y   No. Observations:                  726
+Model:                         Probit   Df Residuals:                      709
+Method:                           MLE   Df Model:                           16
+Date:                Fri, 02 Oct 2026   Pseudo R-squ.:                  0.5029
+Time:                        18:13:14   Log-Likelihood:                -189.70
+converged:                       True   LL-Null:                       -381.62
+Covariance Type:              cluster   LLR p-value:                 8.807e-72
+===============================================================================================
+                                  coef    std err          z      P>|z|      [0.025      0.975]
+-----------------------------------------------------------------------------------------------
+Intercept                     -29.8168      4.040     -7.380      0.000     -37.735     -21.898
+C(season)[T.2015]               0.0161      0.355      0.045      0.964      -0.680       0.712
+C(season)[T.2016]              -0.0368      0.398     -0.092      0.926      -0.818       0.744
+C(season)[T.2017]              -0.0398      0.363     -0.110      0.913      -0.751       0.671
+C(season)[T.2018]              -0.0335      0.424     -0.079      0.937      -0.865       0.798
+C(season)[T.2019]              -0.0330      0.346     -0.095      0.924      -0.711       0.645
+C(season)[T.2020]              -0.0498      0.408     -0.122      0.903      -0.849       0.750
+C(season)[T.2021]              -0.0340      0.468     -0.073      0.942      -0.951       0.883
+C(season)[T.2022]               0.0293      0.377      0.078      0.938      -0.709       0.767
+C(season)[T.2023]               0.1250      0.432      0.290      0.772      -0.721       0.971
+C(league)[T.La_Liga]           -0.1818      0.221     -0.822      0.411      -0.615       0.251
+C(league)[T.Premier_League]    -1.1242      0.255     -4.407      0.000      -1.624      -0.624
+C(league)[T.Serie_A]           -0.3185      0.289     -1.101      0.271      -0.885       0.248
+Y_lag                           0.6275      0.235      2.671      0.008       0.167       1.088
+log_wage                        0.0281      0.386      0.073      0.942      -0.728       0.785
+Y_0                             0.2060      0.211      0.975      0.329      -0.208       0.620
+mean_log_wage                   1.6135      0.440      3.665      0.000       0.751       2.477
+===============================================================================================
+Pseudo R2 = 0.503; LLR p-value = 8.81e-72
+
+=== Punkt odniesienia: statyczny probit (bez Y_lag) ===
+                          Probit Regression Results                           
+==============================================================================
+Dep. Variable:                      Y   No. Observations:                  726
+Model:                         Probit   Df Residuals:                      712
+Method:                           MLE   Df Model:                           13
+Date:                Fri, 02 Oct 2026   Pseudo R-squ.:                  0.4500
+Time:                        18:13:14   Log-Likelihood:                -209.89
+converged:                       True   LL-Null:                       -381.62
+Covariance Type:              cluster   LLR p-value:                 1.835e-65
+===============================================================================================
+                                  coef    std err          z      P>|z|      [0.025      0.975]
+-----------------------------------------------------------------------------------------------
+Intercept                     -33.4355      3.540     -9.445      0.000     -40.374     -26.497
+C(season)[T.2015]              -0.0208      0.299     -0.069      0.945      -0.607       0.566
+C(season)[T.2016]              -0.5106      0.356     -1.436      0.151      -1.208       0.186
+C(season)[T.2017]              -0.6786      0.311     -2.185      0.029      -1.287      -0.070
+C(season)[T.2018]              -1.0223      0.324     -3.154      0.002      -1.658      -0.387
+C(season)[T.2019]              -0.9997      0.303     -3.296      0.001      -1.594      -0.405
+C(season)[T.2020]              -1.1211      0.368     -3.049      0.002      -1.842      -0.400
+C(season)[T.2021]              -1.0789      0.352     -3.062      0.002      -1.769      -0.388
+C(season)[T.2022]              -0.8896      0.333     -2.675      0.007      -1.542      -0.238
+C(season)[T.2023]              -0.9692      0.370     -2.623      0.009      -1.693      -0.245
+C(league)[T.La_Liga]           -0.3970      0.243     -1.634      0.102      -0.873       0.079
+C(league)[T.Premier_League]    -1.3224      0.281     -4.707      0.000      -1.873      -0.772
+C(league)[T.Serie_A]           -0.3825      0.305     -1.255      0.209      -0.980       0.215
+log_wage                        1.9014      0.206      9.210      0.000       1.497       2.306
+===============================================================================================
+log_wage: statyczny +1.901 (p=0.000) | CRE +0.028 (p=0.942)
+
+=== Efekty czastkowe (AME) ===
+                 AME     se      p
+Y_lag          0.112  0.052  0.032
+log_wage       0.004  0.055  0.942
+Y_0            0.031  0.035  0.363
+mean_log_wage  0.231  0.057  0.000
+APE Y_lag (roznica dyskretna): +0.112
+
+=== Dekompozycja Mundlaka efektu plac ===
+   within  (log_wage):      +0.004
+   between (mean_log_wage): +0.231
+   trwaly  (within+between):+0.235 -> +10% plac = +2.2 pp
+
+=== Testy poprawnosci specyfikacji ===
+   Laczny test Mundlaka: chi2=14.75, df=2, p=6.27e-04
+   Link test (Pregibon): p=0.598
+   Lead log_wage(t+1):  p=0.005
+   Lead net_spend(t+1): p=0.108
+
+=== Rozszerzenia i odpornosc ===
+   + zmiana trenera         N= 726 Y_lag=+0.755 (p=0.001)
+   + saldo transferowe      N= 726 Y_lag=+0.753 (p=0.002)
+   Wartosc rynkowa kadry    N= 728 Y_lag=+0.865 (p=0.000)
+   Podproba zbalansowana    N= 380 Y_lag=+0.631 (p=0.014)
+   Beniaminkow w top-4: 0 z 59 [SEPARACJA - wspolczynnika nie da sie oszacowac]
+
+=== Rozbicie per liga ===
+                obs  klubow  Y_lag  p(Y_lag)  mean_log_wage    Y_0
+liga                                                              
+Premier_League  186      31  0.476     0.348          2.152  0.550
+Bundesliga      169      26  0.308     0.308          2.240  0.502
+La_Liga         187      30  0.432     0.085          1.476 -0.258
+Serie_A         184      28  0.943     0.063          0.623 -0.180
+
+   Laczny test Walda (H0: brak roznic Y_lag miedzy ligami): chi2=1.18, df=3, p=0.757
+
+DONE
