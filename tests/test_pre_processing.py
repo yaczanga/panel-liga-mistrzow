@@ -1,13 +1,13 @@
 """Testy gwarancji metodologicznych budowy panelu klub x sezon.
 
-Każdy test działa na małej próbie syntetycznej, bez danych źródłowych, więc
-wykonuje się w sekundy i działa w CI, gdzie 65 MB plików Transfermarkt nie
+Kazdy test dziala na malej probie syntetycznej, bez danych zrodlowych, wiec
+wykonuje sie w sekundy i dziala w CI, gdzie 65 MB plikow Transfermarkt nie
 istnieje.
 
-Sprawdzane są własności, na których stoją wnioski: wyznaczanie zmiennej celu
-w obrębie ligi i sezonu, brak wycieku przyszłych wycen do wartości kadry na
-start sezonu, brak przecieku między klubami w zmiennych dynamicznych oraz
-poprawność warunku początkowego i średnich Mundlaka.
+Sprawdzane sa wlasnosci, na ktorych stoja wnioski: wyznaczanie zmiennej celu
+w obrebie ligi i sezonu, brak wycieku przyszlych wycen do wartosci kadry na
+start sezonu, brak przecieku miedzy klubami w zmiennych dynamicznych oraz
+poprawnosc warunku poczatkowego i srednich Mundlaka.
 """
 
 import numpy as np
@@ -51,15 +51,15 @@ def make_lg(rows):
 
 
 class TestZmiennaCeluWObrebieLigiISezonu:
-    """`Y` musi być wyznaczane w parze liga x sezon, nie w rankingu globalnym."""
+    """`Y` musi byc wyznaczane w parze liga x sezon, nie w rankingu globalnym."""
 
     def test_kazda_liga_ma_wlasna_czworke(self):
-        """Dwie ligi, w każdej sześć klubów - razem osiem jedynek, nie cztery."""
+        """Dwie ligi, w kazdej szesc klubow - razem osiem jedynek, nie cztery."""
         cg_rows, lg_rows = [], []
         gid = 0
         for comp, base in (("GB1", 100), ("L1", 200)):
             for i in range(6):
-                # Klub o niższym indeksie wygrywa więcej meczów.
+                # Klub o nizszym indeksie wygrywa wiecej meczow.
                 for _ in range(6 - i):
                     cg_rows.append((gid, base + i, 3, 0))
                     lg_rows.append((gid, 2015, comp))
@@ -70,11 +70,11 @@ class TestZmiennaCeluWObrebieLigiISezonu:
             assert agg[agg["competition_id"] == comp]["Y"].sum() == QUAL_SPOTS
 
     def test_slabsza_liga_tez_ma_swoich_kwalifikantow(self):
-        """Przy rankingu globalnym kluby słabszej ligi miałyby zawsze Y = 0."""
+        """Przy rankingu globalnym kluby slabszej ligi mialyby zawsze Y = 0."""
         cg_rows, lg_rows = [], []
         gid = 0
-        # Liga GB1 zdobywa dużo punktów, L1 wyraźnie mniej - ale każdy klub
-        # musi rozegrać co najmniej jeden mecz, inaczej zniknie z panelu.
+        # Liga GB1 zdobywa duzo punktow, L1 wyraznie mniej - ale kazdy klub
+        # musi rozegrac co najmniej jeden mecz, inaczej zniknie z panelu.
         for comp, base, wins in (("GB1", 100, 30), ("L1", 200, 6)):
             for i in range(5):
                 for _ in range(wins - i):
@@ -99,7 +99,7 @@ class TestZmiennaCeluWObrebieLigiISezonu:
             assert agg[agg["season"] == season]["Y"].sum() == QUAL_SPOTS
 
     def test_pozycja_rozstrzygana_bilansem_przy_rownych_punktach(self):
-        """Dwa klub po jednym zwycięstwie; lepszy bilans daje wyższe miejsce."""
+        """Dwa klub po jednym zwyciestwie; lepszy bilans daje wyzsze miejsce."""
         cg = make_club_games([(1, 100, 5, 0), (2, 200, 1, 0)])
         lg = make_lg([(1, 2015, "GB1"), (2, 2015, "GB1")])
         agg, _ = league_table(cg, lg)
@@ -114,7 +114,7 @@ class TestZmiennaCeluWObrebieLigiISezonu:
 
 
 class TestWartoscKadryBezWyciekuZPrzyszlosci:
-    """Wycena na start sezonu nie może zawierać wycen późniejszych."""
+    """Wycena na start sezonu nie moze zawierac wycen pozniejszych."""
 
     def test_wycena_pozniejsza_niz_pierwszy_lipca_jest_pomijana(self):
         val = pd.DataFrame(
@@ -218,7 +218,7 @@ class TestZmienneDynamiczneBezPrzecieku:
             [(1, 2015, 0, 10.0), (1, 2016, 0, 20.0), (2, 2015, 0, 99.0)]
         ).set_index(["club_id", "season"])
         assert out.loc[(1, 2015), "log_wage_lead"] == 20.0
-        # Ostatni sezon klubu nie ma następnika, a nie wartość innego klubu.
+        # Ostatni sezon klubu nie ma nastepnika, a nie wartosc innego klubu.
         assert pd.isna(out.loc[(1, 2016), "log_wage_lead"])
         assert pd.isna(out.loc[(2, 2015), "log_wage_lead"])
 
@@ -232,7 +232,7 @@ class TestBeniaminek:
         )
 
     def test_pierwszy_sezon_panelu_ma_brak_a_nie_zero(self):
-        """Cenzura lewostronna: nie wiemy, czy klub był wcześniej w lidze."""
+        """Cenzura lewostronna: nie wiemy, czy klub byl wczesniej w lidze."""
         out = add_promoted(self.panel([("GB1", 100, 2013)]))
         assert pd.isna(out.loc[0, "promoted"])
 
@@ -247,7 +247,7 @@ class TestBeniaminek:
         assert out.loc[2015, "promoted"] == 0
 
     def test_obecnosc_liczy_sie_w_obrebie_tej_samej_ligi(self):
-        """Klub, który rok wcześniej grał w innej lidze, jest tu beniaminkiem."""
+        """Klub, ktory rok wczesniej gral w innej lidze, jest tu beniaminkiem."""
         out = add_promoted(
             self.panel([("L1", 100, 2014), ("GB1", 100, 2015)])
         ).set_index("competition_id")
@@ -262,8 +262,8 @@ class TestSaldoTransferowe:
     def transfers(cls, rows):
         """(to_club, from_club, data, kwota, transfer_season).
 
-        Kolumny podane jawnie, żeby pusta ramka miała ten sam układ co plik
-        źródłowy - inaczej test pustego przypadku sprawdzałby brak kolumn,
+        Kolumny podane jawnie, zeby pusta ramka miala ten sam uklad co plik
+        zrodlowy - inaczej test pustego przypadku sprawdzalby brak kolumn,
         a nie zachowanie funkcji.
         """
         frame = pd.DataFrame(
@@ -279,18 +279,18 @@ class TestSaldoTransferowe:
         return frame
 
     def test_transfer_zimowy_nie_wchodzi_do_okienka_letniego(self):
-        """Styczeń nowego roku kalendarzowego: poza okienkiem i poza rokiem startu."""
+        """Styczen nowego roku kalendarzowego: poza okienkiem i poza rokiem startu."""
         panel = pd.DataFrame({"club_id": [100], "season": [2015]})
         tr = self.transfers([(100, 200, "2016-01-15", 10e6, "15/16")])
         out = add_net_spend(panel, tr)
         assert out.loc[0, "net_spend_m"] == 0.0
 
     def test_sam_filtr_miesiaca_wyklucza_transfer_z_wlasciwego_roku(self):
-        """Transfer ze stycznia roku startu sezonu odrzuca wyłącznie filtr miesiąca.
+        """Transfer ze stycznia roku startu sezonu odrzuca wylacznie filtr miesiaca.
 
-        Rok zgadza się ze `start_year`, więc gdyby okienko nie było zawężone do
-        czerwca-sierpnia, kwota weszłaby do salda. Bez tego testu rozszerzenie
-        okienka na cały rok przechodzi niezauważone.
+        Rok zgadza sie ze `start_year`, wiec gdyby okienko nie bylo zawezone do
+        czerwca-sierpnia, kwota weszlaby do salda. Bez tego testu rozszerzenie
+        okienka na caly rok przechodzi niezauwazone.
         """
         panel = pd.DataFrame({"club_id": [100], "season": [2015]})
         tr = self.transfers([(100, 200, "2015-01-15", 10e6, "15/16")])
@@ -298,7 +298,7 @@ class TestSaldoTransferowe:
         assert out.loc[0, "net_spend_m"] == 0.0
 
     def test_sam_filtr_roku_wyklucza_transfer_z_wlasciwego_miesiaca(self):
-        """Lipiec, ale rok inny niż rok startu sezonu - odrzuca filtr roku."""
+        """Lipiec, ale rok inny niz rok startu sezonu - odrzuca filtr roku."""
         panel = pd.DataFrame({"club_id": [100], "season": [2015]})
         tr = self.transfers([(100, 200, "2016-07-15", 10e6, "15/16")])
         out = add_net_spend(panel, tr)
@@ -317,7 +317,7 @@ class TestSaldoTransferowe:
         assert out.loc[0, "net_spend_m"] == pytest.approx(-10.0)
 
     def test_brak_transferow_to_zero_a_nie_brak(self):
-        """Zero jest poprawne: klub bez transferów nie wydał nic."""
+        """Zero jest poprawne: klub bez transferow nie wydal nic."""
         panel = pd.DataFrame({"club_id": [100], "season": [2015]})
         out = add_net_spend(panel, self.transfers([]))
         assert out.loc[0, "net_spend_m"] == 0.0
@@ -351,7 +351,7 @@ class TestMapowanieNazwKlubow:
         assert out.loc[0, "log_wage"] == pytest.approx(np.log(100_000_000))
 
     def test_ta_sama_nazwa_w_innej_lidze_nie_jest_mylona(self):
-        """Mapowanie jest zagnieżdżone w ligach, więc kolizje nazw nie szkodzą."""
+        """Mapowanie jest zagniezdzone w ligach, wiec kolizje nazw nie szkodza."""
         from src.data_load import WAGE2ID
 
         wspolne = set(WAGE2ID["Premier_League"]) & set(WAGE2ID["Serie_A"])

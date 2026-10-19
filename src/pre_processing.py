@@ -13,24 +13,24 @@ from src.data_load import (
     WAGE2ID,
 )
 
-# Liczba miejsc dających bezpośredni awans do Ligi Mistrzów.
+# Liczba miejsc dajacych bezposredni awans do Ligi Mistrzow.
 QUAL_SPOTS = 4
 
-# Zmienne, których średnie wewnątrzklubowe wchodzą do równania jako urządzenie
+# Zmienne, ktorych srednie wewnatrzklubowe wchodza do rownania jako urzadzenie
 # Mundlaka.
 MUNDLAK_VARS = ["log_wage", "log_mv", "net_spend_m"]
 
-# Braki w tych zmiennych usuwają obserwację z próby estymacyjnej.
+# Braki w tych zmiennych usuwaja obserwacje z proby estymacyjnej.
 ESTIMATION_VARS = ["Y_lag", "log_wage", "mean_log_wage", "Y_0"]
 
 PANEL_FILE = PROCESSED / "panel_klub_sezon.csv"
 
 
 def league_table(club_games: pd.DataFrame, lg: pd.DataFrame) -> pd.DataFrame:
-    """Tabela końcowa: punkty, bilans, pozycja i Y w obrębie liga x sezon.
+    """Tabela koncowa: punkty, bilans, pozycja i Y w obrebie liga x sezon.
 
-    Pozycja i zmienna celu są wyznaczane **wewnątrz pary liga x sezon**, nie
-    globalnie - inaczej kluby słabszej ligi nigdy nie trafiłyby do top-4.
+    Pozycja i zmienna celu sa wyznaczane **wewnatrz pary liga x sezon**, nie
+    globalnie - inaczej kluby slabszej ligi nigdy nie trafilyby do top-4.
     """
     cg = club_games.merge(
         lg[["game_id", "season", "competition_id"]], on="game_id", how="inner"
@@ -61,11 +61,11 @@ def league_table(club_games: pd.DataFrame, lg: pd.DataFrame) -> pd.DataFrame:
 
 
 def squad_value(valuations: pd.DataFrame, seasons) -> pd.DataFrame:
-    """Suma wycen kadry na 1 lipca każdego sezonu.
+    """Suma wycen kadry na 1 lipca kazdego sezonu.
 
-    Dla każdego zawodnika bierzemy jego **ostatnią wycenę nie późniejszą** niż
-    1 lipca, więc do wartości kadry na start sezonu nie wchodzą wyceny
-    powstałe już w trakcie jego trwania.
+    Dla kazdego zawodnika bierzemy jego **ostatnia wycene nie pozniejsza** niz
+    1 lipca, wiec do wartosci kadry na start sezonu nie wchodza wyceny
+    powstale juz w trakcie jego trwania.
     """
     val = valuations.dropna(subset=["market_value_in_eur", "current_club_id"])
 
@@ -91,12 +91,12 @@ def squad_value(valuations: pd.DataFrame, seasons) -> pd.DataFrame:
 
 
 def add_wages(panel: pd.DataFrame, wages: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Dołączenie funduszu płac po mapowaniu nazw fbref na club_id.
+    """Dolaczenie funduszu plac po mapowaniu nazw fbref na club_id.
 
-    Waluta różni się między ligami (GBP, EUR); w logarytmach stała przelicznika
-    jest pochłaniana przez efekt stały ligi, więc nie trzeba jej ujednolicać.
+    Waluta rozni sie miedzy ligami (GBP, EUR); w logarytmach stala przelicznika
+    jest pochlaniana przez efekt staly ligi, wiec nie trzeba jej ujednolicac.
 
-    Zwraca (panel, nazwy niezmapowane) - te drugie warto obejrzeć, bo każda
+    Zwraca (panel, nazwy niezmapowane) - te drugie warto obejrzec, bo kazda
     niezmapowana nazwa to utracone obserwacje.
     """
     w = wages.copy()
@@ -117,7 +117,7 @@ def add_wages(panel: pd.DataFrame, wages: pd.DataFrame) -> tuple[pd.DataFrame, p
 
 
 def add_manager_change(panel: pd.DataFrame, cg: pd.DataFrame) -> pd.DataFrame:
-    """Zmiana trenera w sezonie: więcej niż jedno nazwisko w meczach klubu."""
+    """Zmiana trenera w sezonie: wiecej niz jedno nazwisko w meczach klubu."""
     mgr = (
         cg.groupby(["club_id", "season"])["own_manager_name"]
         .nunique()
@@ -133,11 +133,11 @@ def add_manager_change(panel: pd.DataFrame, cg: pd.DataFrame) -> pd.DataFrame:
 def add_cl_participation(
     panel: pd.DataFrame, games: pd.DataFrame, club_games: pd.DataFrame
 ) -> pd.DataFrame:
-    """Udział w Lidze Mistrzów w danym sezonie.
+    """Udzial w Lidze Mistrzow w danym sezonie.
 
-    Zmienna opisowa: nie wchodzi do żadnego modelu, bo jest niemal tożsama
-    z `Y_lag` (awans z poprzedniego sezonu oznacza grę w LM w bieżącym).
-    Zostaje w panelu, bo jest użyteczna przy opisie próby.
+    Zmienna opisowa: nie wchodzi do zadnego modelu, bo jest niemal tozsama
+    z `Y_lag` (awans z poprzedniego sezonu oznacza gre w LM w biezacym).
+    Zostaje w panelu, bo jest uzyteczna przy opisie proby.
     """
     cl_games = games[games["competition_id"].isin(CL_COMPETITIONS)][["game_id", "season"]]
     cl_part = (
@@ -153,7 +153,7 @@ def add_cl_participation(
 def add_promoted(panel: pd.DataFrame) -> pd.DataFrame:
     """Beniaminek: klub nieobecny w **swojej** lidze w sezonie poprzednim.
 
-    Pierwszy sezon panelu dostaje brak, nie zero - nie wiemy, czy klub był
+    Pierwszy sezon panelu dostaje brak, nie zero - nie wiemy, czy klub byl
     wtedy w lidze (cenzura lewostronna).
     """
     present = set(zip(panel["competition_id"], panel["club_id"], panel["season"]))
@@ -173,8 +173,8 @@ def add_promoted(panel: pd.DataFrame) -> pd.DataFrame:
 def add_net_spend(panel: pd.DataFrame, transfers: pd.DataFrame) -> pd.DataFrame:
     """Saldo transferowe (mln EUR) w letnim okienku przed sezonem.
 
-    Okno ograniczone do czerwca-sierpnia roku rozpoczęcia sezonu, żeby
-    uchwycić inwestycję **przed** sezonem, a nie korektę w jego trakcie.
+    Okno ograniczone do czerwca-sierpnia roku rozpoczecia sezonu, zeby
+    uchwycic inwestycje **przed** sezonem, a nie korekte w jego trakcie.
     """
     tr = transfers.copy()
     tr["fee"] = tr["transfer_fee"].fillna(0)
@@ -212,15 +212,12 @@ def add_net_spend(panel: pd.DataFrame, transfers: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_cre_variables(panel: pd.DataFrame) -> pd.DataFrame:
-    """Zmienne CRE Wooldridge'a: `Y_lag`, `Y_0`, średnie Mundlaka, lead-y.
+    """Zmienne CRE Wooldridge'a: `Y_lag`, `Y_0`, srednie Mundlaka, lead-y.
 
-    Wszystkie przesunięcia są liczone **wewnątrz klubu** po uporządkowaniu po
-    sezonie. `Y_0` to stan w pierwszym obserwowanym sezonie klubu, czyli
-    warunek początkowy - w panelu niezbalansowanym nie dla każdego klubu jest
-    to ten sam rok kalendarzowy (patrz ograniczenia w README).
-
-    Lead-y (`*_lead`) służą wyłącznie testowi ścisłej egzogeniczności: istotny
-    lead oznacza, że regresor reaguje na przeszłe wyniki.
+    Wszystkie przesuniecia sa liczone wewnatrz klubu po uporzadkowaniu po
+    sezonie, a `Y_0` to stan w pierwszym obserwowanym sezonie klubu, ktory
+    w panelu niezbalansowanym nie dla kazdego klubu wypada w tym samym roku.
+    Lead-y (`*_lead`) sluza wylacznie testowi scislej egzogenicznosci.
     """
     out = panel.sort_values(["club_id", "season"]).reset_index(drop=True)
     out["Y_lag"] = out.groupby("club_id")["Y"].shift(1)
@@ -244,9 +241,9 @@ def build_panel(
     wages: pd.DataFrame,
     lg: pd.DataFrame,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Pełny panel klub x sezon ze wszystkimi regresorami.
+    """Pelny panel klub x sezon ze wszystkimi regresorami.
 
-    Zwraca (panel, nazwy klubów niezmapowane między fbref i Transfermarkt).
+    Zwraca (panel, nazwy klubow niezmapowane miedzy fbref i Transfermarkt).
     """
     agg, cg = league_table(club_games, lg)
 
@@ -264,7 +261,7 @@ def build_panel(
 
 
 def to_estimation_frame(panel: pd.DataFrame, save: bool = False) -> pd.DataFrame:
-    """Próba estymacyjna: obserwacje z pełnym zestawem zmiennych CRE."""
+    """Proba estymacyjna: obserwacje z pelnym zestawem zmiennych CRE."""
     est = panel.dropna(subset=ESTIMATION_VARS).copy()
     est["season"] = est["season"].astype(int)
 
@@ -285,13 +282,13 @@ def load_panel() -> pd.DataFrame:
 
 
 def balanced_clubs(panel: pd.DataFrame) -> pd.Index:
-    """Kluby obecne we wszystkich sezonach panelu - podpróba zbalansowana."""
+    """Kluby obecne we wszystkich sezonach panelu - podproba zbalansowana."""
     counts = panel.groupby("club_id")["season"].nunique()
     return counts[counts == panel["season"].nunique()].index
 
 
 def describe_panel(est: pd.DataFrame) -> pd.DataFrame:
-    """Liczebność, liczba klubów i udział kwalifikacji w podziale na ligi."""
+    """Liczebnosc, liczba klubow i udzial kwalifikacji w podziale na ligi."""
     return (
         est.groupby("league")
         .agg(obs=("Y", "size"), klubow=("club_id", "nunique"), kwal_rate=("Y", "mean"))

@@ -1,8 +1,17 @@
-"""Wykresy i tabele publikacyjne. Funkcje bezstanowe, katalog docelowy globalny."""
+"""Wykresy i tabele publikacyjne. Funkcje bezstanowe, katalog docelowy globalny.
+
+Barwy pochodza wylacznie z tokenow modulu `plot_style` i sa wybierane przez
+role, jaka seria pelni w danych: cynober to przedmiot uwagi, blekit to
+odniesienie. Kwalifikacja do Ligi Mistrzow jest przedmiotem badania, wiec
+sezony z awansem nosza ACCENT na tle MUTED, a krzywa dla klubu bez awansu
+w poprzednim sezonie jest odniesieniem. Macierz przejsc niesie wielkosc,
+nie tozsamosc, wiec dostaje rampe sekwencyjna.
+"""
 
 import numpy as np
 import pandas as pd
 
+from src import plot_style as style
 from src.data_load import PROJECT_ROOT
 from src.inference import LABELS, ame
 from src.model import LEAGUE_LABELS, LEAGUE_ORDER
@@ -10,24 +19,20 @@ from src.model import LEAGUE_LABELS, LEAGUE_ORDER
 FIGURES = PROJECT_ROOT / "reports" / "figures"
 TABLES = PROJECT_ROOT / "reports" / "tables"
 
-DARK = "#1f4e79"
-LIGHT = "#bdbdbd"
-
-# Zakres siatki predykcji: kwantyle 5 i 95 procent, żeby nie ekstrapolować
-# poza obserwowane fundusze płac.
+# Zakres siatki predykcji: kwantyle 5 i 95 procent, zeby nie ekstrapolowac
+# poza obserwowane fundusze plac.
 GRID_QUANTILES = (0.05, 0.95)
 GRID_POINTS = 60
 
-# Sezon i liga ustalone dla wykresu predykcji - efekty stałe trzeba na czymś
-# oprzeć, a wybór nie zmienia kształtu zależności, tylko poziom.
+# Sezon i liga ustalone dla wykresu predykcji - efekty stale trzeba na czyms
+# oprzec, a wybor nie zmienia ksztaltu zaleznosci, tylko poziom.
 PRED_SEASON = 2019
 PRED_LEAGUE = "Premier_League"
 
 
 def setup_style() -> None:
-    import matplotlib.pyplot as plt
-
-    plt.rcParams.update({"font.family": "serif", "font.size": 11, "figure.dpi": 120})
+    """Ustawia system wizualny projektu. Wywolac raz, przed pierwszym rysunkiem."""
+    style.apply_style()
 
 
 def _finish(fig, name: str | None, show: bool):
@@ -47,32 +52,36 @@ def _finish(fig, name: str | None, show: bool):
 
 
 def plot_transition_matrix(tab: pd.DataFrame, name="macierz_przejsc", show=True):
-    """Empiryczna macierz przejść: jak trwała jest kwalifikacja do LM."""
+    """Empiryczna macierz przejsc: jak trwala jest kwalifikacja do LM."""
     import matplotlib.pyplot as plt
 
-    fig, ax = plt.subplots(figsize=(4.8, 4.2))
-    im = ax.imshow(tab.values, cmap="Blues", vmin=0, vmax=1)
+    fig, ax = plt.subplots(figsize=style.SQUARE)
+    im = ax.imshow(tab.values, cmap=style.SEQUENTIAL_CMAP, vmin=0, vmax=1)
     ax.set_xticks([0, 1])
     ax.set_xticklabels(["poza top-4 (t)", "top-4 (t)"])
     ax.set_yticks([0, 1])
     ax.set_yticklabels(["poza top-4 (t–1)", "top-4 (t–1)"])
+    ax.grid(visible=False)
     for i in range(tab.shape[0]):
         for j in range(tab.shape[1]):
             v = tab.values[i, j]
             ax.text(
                 j, i, f"{v:.0%}",
-                ha="center", va="center",
-                color="white" if v > 0.5 else "black", fontsize=13,
+                ha="center", va="center", fontsize=13,
+                color=style.BACKGROUND if v > 0.5 else style.TEXT,
             )
-    fig.colorbar(im, fraction=0.046, pad=0.04)
+    bar = fig.colorbar(im, fraction=0.046, pad=0.04)
+    bar.outline.set_visible(False)
+    bar.ax.tick_params(labelsize=9, colors=style.TEXT_SECONDARY)
+    style.decimal_comma(bar.ax, axis="y", places=1)
     return _finish(fig, name, show)
 
 
 def plot_predicted_probability(res, est, name="prognoza_plac_stan", show=True):
-    """Przewidywane P(awans) względem funduszu płac, osobno dla Y_lag = 0 i 1.
+    """Przewidywane P(awans) wzgledem funduszu plac, osobno dla Y_lag = 0 i 1.
 
-    Odstęp między krzywymi to zależność stanu: ile daje sam fakt awansu
-    w poprzednim sezonie, przy tym samym poziomie płac.
+    Odstep miedzy krzywymi to zaleznosc stanu: ile daje sam fakt awansu
+    w poprzednim sezonie, przy tym samym poziomie plac.
     """
     import matplotlib.pyplot as plt
 
@@ -96,32 +105,50 @@ def plot_predicted_probability(res, est, name="prognoza_plac_stan", show=True):
         )
         return res.predict(frame)
 
-    fig, ax = plt.subplots(figsize=(7, 4.5))
-    ax.plot(grid, predict(0), color="grey", label="Y_lag = 0 (brak awansu w t–1)")
-    ax.plot(grid, predict(1), color="black", label="Y_lag = 1 (awans w t–1)")
+    fig, ax = plt.subplots(figsize=style.STANDARD)
+    ax.plot(grid, predict(0), color=style.REFERENCE,
+            label="Y_lag = 0 (brak awansu w t–1)")
+    ax.plot(grid, predict(1), color=style.ACCENT,
+            label="Y_lag = 1 (awans w t–1)")
     ax.set_xlabel("Średni (log) fundusz płac klubu — mean_log_wage")
     ax.set_ylabel("Przewidywane P(awans do Ligi Mistrzów)")
+    style.decimal_comma(ax, axis="xy", places=1)
     ax.legend()
     return _finish(fig, name, show)
 
 
 def plot_wage_vs_rank(panel: pd.DataFrame, name="place_a_pozycja", show=True):
-    """Fundusz płac a pozycja końcowa, panel 2x2 po ligach.
+    """Fundusz plac a pozycja koncowa, panel 2x2 po ligach.
 
-    Oś pozycji odwrócona, więc wyżej na wykresie oznacza lepsze miejsce.
-    Kolorem wyróżnione sezony z awansem do LM.
+    Os pozycji odwrocona raz dla calej siatki, bo panele dziela te os przez
+    `sharey` i odwrocenie w petli zniosloby samo siebie. Sezony z awansem
+    niosa akcent, pozostale sa masa bez tozsamosci.
     """
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+    from matplotlib.ticker import MaxNLocator
 
-    fig, axes = plt.subplots(2, 2, figsize=(9, 7), sharey=True)
+    fig, axes = plt.subplots(2, 2, figsize=style.SQUARE, sharey=True)
     for ax, lg in zip(axes.flat, LEAGUE_ORDER):
         s = panel[panel["league"] == lg].dropna(subset=["log_wage", "rank"])
-        colours = [DARK if v == 1 else LIGHT for v in s["Y"]]
-        ax.scatter(s["log_wage"], s["rank"], c=colours, s=26, edgecolor="white", linewidth=0.3)
-        ax.invert_yaxis()
+        colours = [style.ACCENT if v == 1 else style.MUTED for v in s["Y"]]
+        ax.scatter(s["log_wage"], s["rank"], c=colours, s=26,
+                   edgecolor=style.BACKGROUND, linewidth=0.3)
         ax.set_title(LEAGUE_LABELS[lg])
         ax.set_xlabel("log(fundusz płac)")
         ax.set_ylabel("Pozycja końcowa")
+        # Pozycja w tabeli jest liczba calkowita, wiec os nie dzieli miejsc.
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        style.decimal_comma(ax, axis="x", places=1)
+
+    axes.flat[0].invert_yaxis()
+    # W legendzie stoi sam akcent: masa bez tozsamosci nie jest kategoria.
+    fig.legend(
+        handles=[Line2D([], [], marker="o", linestyle="none",
+                        color=style.ACCENT,
+                        label="sezon z awansem do Ligi Mistrzów")],
+        loc="upper center", ncol=1, bbox_to_anchor=(0.5, 1.02),
+    )
     return _finish(fig, name, show)
 
 
@@ -141,7 +168,7 @@ table.sci td:first-child, table.sci th:first-child { text-align:left; }
 
 SOURCE_NOTE = "<em>Źródło:</em> Opracowanie własne."
 
-# Nota powtarzana pod każdą tabelą - jedno miejsce, jedna treść.
+# Nota powtarzana pod kazda tabela - jedno miejsce, jedna tresc.
 CLUSTER_NOTE = (
     "W nawiasach błędy standardowe klastrowane na poziomie klubu. "
     "Istotność: *** p&lt;0,01, ** p&lt;0,05, * p&lt;0,1. Liga bazowa: Bundesliga."
@@ -159,7 +186,7 @@ def stars(p: float) -> str:
 
 
 def fmt(x: float) -> str:
-    """Polski separator dziesiętny i minus typograficzny."""
+    """Polski separator dziesietny i minus typograficzny."""
     return f"{x:.3f}".replace("-", "−").replace(".", ",")
 
 
@@ -184,14 +211,14 @@ def save_table(html: str, fname: str, show: bool = True) -> str:
 
 
 def _cell(res, key: str) -> tuple[str, str]:
-    """Para (współczynnik z gwiazdkami, błąd standardowy w nawiasie)."""
+    """Para (wspolczynnik z gwiazdkami, blad standardowy w nawiasie)."""
     if key in res.params.index:
         return f"{fmt(res.params[key])}{stars(res.pvalues[key])}", f"({fmt(res.bse[key])})"
     return "—", ""
 
 
 def coef_ame_table(title, res, keys, stats, note, label_map=None) -> str:
-    """Tabela jednego modelu: współczynnik i efekt cząstkowy obok siebie."""
+    """Tabela jednego modelu: wspolczynnik i efekt czastkowy obok siebie."""
     labels = label_map or LABELS
     frame = ame(res)
     body = ""
@@ -220,9 +247,9 @@ def coef_ame_table(title, res, keys, stats, note, label_map=None) -> str:
 
 
 def multi_model_table(title, models, keys, stat_rows, note, label_map=None) -> str:
-    """Tabela wielu modeli: kolumna na model, wiersz na zmienną.
+    """Tabela wielu modeli: kolumna na model, wiersz na zmienna.
 
-    `models` to lista (etykieta, wynik). Wiersz pomijany, jeśli żaden model
+    `models` to lista (etykieta, wynik). Wiersz pomijany, jesli zaden model
     nie zawiera danej zmiennej.
     """
     labels = label_map or LABELS

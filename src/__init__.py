@@ -1,1 +1,1 @@
-"""Trwałość kwalifikacji do Ligi Mistrzów - dynamiczny probit CRE."""
+"""Trwalosc kwalifikacji do Ligi Mistrzow - dynamiczny probit CRE."""

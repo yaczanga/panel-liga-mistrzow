@@ -1,7 +1,7 @@
-"""Efekty cząstkowe, testy diagnostyczne i dekompozycja Mundlaka.
+"""Efekty czastkowe, testy diagnostyczne i dekompozycja Mundlaka.
 
-W probicie współczynniki nie są prawdopodobieństwami, więc interpretowalną
-wielkością jest przeciętny efekt cząstkowy (AME), nie `beta`.
+W probicie wspolczynniki nie sa prawdopodobienstwami, wiec interpretowalna
+wielkoscia jest przecietny efekt czastkowy (AME), nie `beta`.
 """
 
 import numpy as np
@@ -10,7 +10,7 @@ import statsmodels.formula.api as smf
 
 from src.model import CLUSTER
 
-# Nazwa kolumn zwracanych przez statsmodels w summary_frame efektów cząstkowych.
+# Nazwa kolumn zwracanych przez statsmodels w summary_frame efektow czastkowych.
 AME_COLUMNS = ["AME", "se", "z", "p", "ci_lo", "ci_hi"]
 
 LABELS = {
@@ -31,9 +31,9 @@ LABELS = {
 
 
 def ame(res) -> pd.DataFrame:
-    """Przeciętne efekty cząstkowe: różnica dyskretna dla 0/1, pochodna dla ciągłych.
+    """Przecietne efekty czastkowe: roznica dyskretna dla 0/1, pochodna dla ciaglych.
 
-    Błędy standardowe dziedziczą klastrowanie po klubie z macierzy modelu.
+    Bledy standardowe dziedzicza klastrowanie po klubie z macierzy modelu.
     """
     frame = res.get_margeff(at="overall", method="dydx", dummy=True).summary_frame()
     frame.columns = AME_COLUMNS
@@ -41,10 +41,10 @@ def ame(res) -> pd.DataFrame:
 
 
 def discrete_effect(res, data: pd.DataFrame, variable: str) -> float:
-    """Różnica dyskretna uśredniona po próbie dla zmiennej zero-jedynkowej.
+    """Roznica dyskretna usredniona po probie dla zmiennej zero-jedynkowej.
 
     Dla zmiennej 0/1 poprawnym efektem jest Phi(.|1) - Phi(.|0) policzone dla
-    każdej obserwacji i uśrednione, a nie pochodna w punkcie średnim.
+    kazdej obserwacji i usrednione, a nie pochodna w punkcie srednim.
     """
     d1 = data.copy()
     d1[variable] = 1.0
@@ -54,20 +54,16 @@ def discrete_effect(res, data: pd.DataFrame, variable: str) -> float:
 
 
 def mundlak_test(res, terms=("Y_0", "mean_log_wage")) -> tuple[float, float]:
-    """Łączny test istotności warunku początkowego i średnich Mundlaka.
+    """Laczny test istotnosci warunku poczatkowego i srednich Mundlaka.
 
     H0: efekt klubu nieskorelowany z regresorami, czyli RE wystarcza.
-    Odrzucenie oznacza, że CRE jest konieczne, a RE obciążony.
     """
     w = res.wald_test([f"{t} = 0" for t in terms], scalar=True)
     return float(w.statistic), float(w.pvalue)
 
 
 def link_test(res, est: pd.DataFrame) -> float:
-    """Test Pregibona: kwadrat predykcji liniowej nie powinien być istotny.
-
-    Zwraca wartość p. Istotny kwadrat sygnalizuje złą postać funkcyjną.
-    """
+    """Test Pregibona: kwadrat predykcji liniowej nie powinien byc istotny."""
     d = est.copy()
     d["_xb"] = res.fittedvalues
     d["_xb2"] = res.fittedvalues**2
@@ -76,30 +72,22 @@ def link_test(res, est: pd.DataFrame) -> float:
 
 
 def exogeneity_test(res, variable: str) -> float:
-    """Wartość p dla lead-a regresora - test ścisłej egzogeniczności.
-
-    Istotny lead oznacza feedback: regresor reaguje na przeszłe wyniki, więc
-    ścisła egzogeniczność nie zachodzi.
-    """
+    """Wartosc p dla lead-a regresora - test scislej egzogenicznosci."""
     return float(res.pvalues[variable])
 
 
 def league_difference_test(res_interaction) -> tuple[float, float, list[str]]:
-    """Łączny test Walda równości `Y_lag` między ligami.
-
-    Brak odrzucenia H0 uzasadnia estymację zunifikowaną na czterech ligach.
-    """
+    """Laczny test Walda rownosci `Y_lag` miedzy ligami."""
     terms = [n for n in res_interaction.params.index if "Y_lag:" in n]
     w = res_interaction.wald_test(terms, scalar=True)
     return float(w.statistic), float(w.pvalue), terms
 
 
 def wage_decomposition(res) -> dict:
-    """Rozbicie efektu płac na krótkookresowy i trwały.
+    """Rozbicie efektu plac na krotkookresowy i trwaly.
 
-    `log_wage` to efekt within (zmiana funduszu płac w klubie),
-    `mean_log_wage` to część between (trwały poziom zamożności klubu).
-    Suma obu jest efektem trwałego podniesienia funduszu płac.
+    `log_wage` jest czescia within, `mean_log_wage` czescia between, a ich
+    suma efektem trwalego podniesienia funduszu plac.
     """
     frame = ame(res)
     within = float(frame.loc["log_wage", "AME"])
@@ -109,12 +97,12 @@ def wage_decomposition(res) -> dict:
         "within": within,
         "between": between,
         "trwaly": permanent,
-        # Przeliczenie na wzrost płac o 10 procent, w punktach procentowych.
+        # Przeliczenie na wzrost plac o 10 procent, w punktach procentowych.
         "trwaly_pp_na_10pct": permanent * np.log(1.10) * 100,
     }
 
 
 def transition_matrix(panel: pd.DataFrame) -> pd.DataFrame:
-    """Empiryczna macierz przejść stanu kwalifikacji, wiersze normalizowane."""
+    """Empiryczna macierz przejsc stanu kwalifikacji, wiersze normalizowane."""
     d = panel.dropna(subset=["Y_lag"])
     return pd.crosstab(d["Y_lag"], d["Y"], normalize="index")

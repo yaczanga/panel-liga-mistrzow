@@ -1,7 +1,6 @@
 """Specyfikacje probitowe: CRE Wooldridge'a, model referencyjny i rozszerzenia.
 
-Moduł **tworzy** oszacowania. Efekty cząstkowe i testy diagnostyczne są
-w `inference`.
+Modul tworzy oszacowania; efekty czastkowe i testy sa w `inference`.
 """
 
 import pandas as pd
@@ -9,31 +8,28 @@ import statsmodels.formula.api as smf
 
 CLUSTER = "club_id"
 
-# Efekty stałe ligi pochłaniają różnice walut i siły rozgrywek, efekty sezonu -
-# wspólne szoki (zmiany w podziale środków z praw telewizyjnych, pandemia).
+# Efekty stale ligi pochlaniaja roznice walut i sily rozgrywek, sezonu - szoki wspolne.
 FE = "C(season) + C(league)"
 
-# Model główny: dynamiczny probit CRE. `Y_lag` mierzy zależność stanu,
-# `Y_0` jest warunkiem początkowym, `mean_log_wage` średnią Mundlaka.
+# Model glowny: `Y_lag` to zaleznosc stanu, `Y_0` warunek poczatkowy, `mean_log_wage` srednia Mundlaka.
 CRE = f"Y ~ Y_lag + log_wage + Y_0 + mean_log_wage + {FE}"
 
-# Punkt odniesienia bez zależności stanu - pokazuje, ile z efektu płac
-# w statycznym modelu jest w rzeczywistości trwałością pozycji.
+# Punkt odniesienia bez zaleznosci stanu.
 STATIC = f"Y ~ log_wage + {FE}"
 
-# Rozszerzenie o saldo transferowe z dekompozycją na część within i between.
+# Rozszerzenie o saldo transferowe z dekompozycja na czesc within i between.
 NET_SPEND = (
     "Y ~ Y_lag + log_wage + net_spend_m + Y_0 + mean_log_wage + mean_net_spend_m "
     f"+ {FE}"
 )
 
-# Odporność: wartość rynkowa kadry (EUR, spójna między ligami) zamiast płac.
+# Odpornosc: wartosc rynkowa kadry (EUR, spojna miedzy ligami) zamiast plac.
 MARKET_VALUE = f"Y ~ Y_lag + log_mv + Y_0 + mean_log_mv + {FE}"
 
-# Model per liga: bez efektu stałego ligi, bo próba jest już jednoligowa.
+# Model per liga: bez efektu stalego ligi, bo proba jest juz jednoligowa.
 PER_LEAGUE = "Y ~ Y_lag + log_wage + Y_0 + mean_log_wage + C(season)"
 
-# Test różnic zależności stanu między ligami.
+# Test roznic zaleznosci stanu miedzy ligami.
 INTERACTION = (
     "Y ~ Y_lag * C(league) + log_wage + Y_0 + mean_log_wage + C(season)"
 )
@@ -48,10 +44,9 @@ LEAGUE_LABELS = {
 
 
 def probit(formula: str, data: pd.DataFrame, **kwargs):
-    """Probit z błędami standardowymi klastrowanymi po klubie.
+    """Probit z bledami standardowymi klastrowanymi po klubie.
 
-    Klastrowanie po klubie, bo obserwacje tego samego klubu w kolejnych
-    sezonach nie są niezależne.
+    Obserwacje tego samego klubu w kolejnych sezonach nie sa niezalezne.
     """
     return smf.probit(formula, data=data).fit(
         cov_type="cluster", cov_kwds={"groups": data[CLUSTER]}, disp=False, **kwargs
@@ -59,7 +54,7 @@ def probit(formula: str, data: pd.DataFrame, **kwargs):
 
 
 def fit_main(est: pd.DataFrame):
-    """Model główny CRE."""
+    """Model glowny CRE."""
     return probit(CRE, est)
 
 
@@ -69,10 +64,10 @@ def fit_static(est: pd.DataFrame):
 
 
 def fit_extensions(est: pd.DataFrame, panel: pd.DataFrame, balanced) -> dict:
-    """Rozszerzenia i sprawdzenia odporności modelu głównego.
+    """Rozszerzenia i sprawdzenia odpornosci modelu glownego.
 
-    Każde rozszerzenie szacujemy na podpróbie o pełnych danych dla dodanej
-    zmiennej, więc liczebności różnią się między kolumnami tabeli.
+    Kazde rozszerzenie szacujemy na podprobie o pelnych danych dla dodanej
+    zmiennej, wiec liczebnosci roznia sie miedzy kolumnami tabeli.
     """
     out = {}
 
@@ -103,10 +98,10 @@ def fit_extensions(est: pd.DataFrame, panel: pd.DataFrame, balanced) -> dict:
 
 
 def fit_per_league(est: pd.DataFrame) -> dict:
-    """Osobny model CRE dla każdej ligi.
+    """Osobny model CRE dla kazdej ligi.
 
-    `warn_convergence=False`, bo na podpróbie jednej ligi (około 200
-    obserwacji) optymalizacja bywa na granicy tolerancji, co nie unieważnia
+    `warn_convergence=False`, bo na podprobie jednej ligi (okolo 200
+    obserwacji) optymalizacja bywa na granicy tolerancji, co nie uniewaznia
     oszacowania punktowego.
     """
     return {
@@ -117,5 +112,5 @@ def fit_per_league(est: pd.DataFrame) -> dict:
 
 
 def fit_interaction(est: pd.DataFrame):
-    """Model z interakcją `Y_lag` x liga - podstawa testu różnic."""
+    """Model z interakcja `Y_lag` x liga - podstawa testu roznic."""
     return probit(INTERACTION, est)

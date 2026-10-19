@@ -2,8 +2,8 @@
 """Przebieg wszystkich specyfikacji na gotowym panelu; wynik do reports/model_results.txt.
 
 Skrypt nie buduje panelu od danych surowych - czyta zapisany
-`data/processed/panel_klub_sezon.csv`. To jest jego sens: powtórzenie modeli
-bez pobierania 65 MB plików Transfermarkt. Panel buduje
+`data/processed/panel_klub_sezon.csv`. To jest jego sens: powtorzenie modeli
+bez pobierania 65 MB plikow Transfermarkt. Panel buduje
 notebooks/02_panel_cre_probit.ipynb.
 
 Uruchomienie z korzenia projektu:

@@ -1,9 +1,9 @@
-"""Testy wnioskowania na syntetycznym panelu o znanym procesie generującym.
+"""Testy wnioskowania na syntetycznym panelu o znanym procesie generujacym.
 
-Testy sprawdzają własności, które muszą zachodzić, a nie konkretne liczby:
-że efekty cząstkowe nie są współczynnikami, że test Mundlaka wykrywa
-skorelowany efekt klubu, że pominięcie zależności stanu podnosi efekt płac,
-i że dekompozycja Mundlaka sumuje się tak, jak twierdzi README.
+Testy sprawdzaja wlasnosci, ktore musza zachodzic, a nie konkretne liczby:
+ze efekty czastkowe nie sa wspolczynnikami, ze test Mundlaka wykrywa
+skorelowany efekt klubu, ze pominiecie zaleznosci stanu podnosi efekt plac,
+i ze dekompozycja Mundlaka sumuje sie tak, jak twierdzi README.
 
 Generator panelu jest w conftest.py.
 """
@@ -35,14 +35,14 @@ def m_static(est):
 
 class TestEfektyCzastkowe:
     def test_ame_nie_jest_wspolczynnikiem(self, m_cre):
-        """W probicie beta nie jest prawdopodobieństwem; AME musi się różnić."""
+        """W probicie beta nie jest prawdopodobienstwem; AME musi sie roznic."""
         frame = ame(m_cre)
         assert frame.loc["log_wage", "AME"] != pytest.approx(
             m_cre.params["log_wage"], rel=1e-3
         )
 
     def test_ame_jest_mniejsze_co_do_modulu_niz_wspolczynnik(self, m_cre):
-        """Gęstość normalna jest poniżej jedynki, więc AME skaluje beta w dół."""
+        """Gestosc normalna jest ponizej jedynki, wiec AME skaluje beta w dol."""
         frame = ame(m_cre)
         assert abs(frame.loc["log_wage", "AME"]) < abs(m_cre.params["log_wage"])
 
@@ -53,7 +53,7 @@ class TestEfektyCzastkowe:
     def test_roznica_dyskretna_zgadza_sie_z_ame_dla_zmiennej_zerojedynkowej(
         self, m_cre, est
     ):
-        """Dla Y_lag oba sposoby liczenia muszą dać praktycznie to samo."""
+        """Dla Y_lag oba sposoby liczenia musza dac praktycznie to samo."""
         reczna = discrete_effect(m_cre, est, "Y_lag")
         z_ame = ame(m_cre).loc["Y_lag", "AME"]
         assert reczna == pytest.approx(z_ame, abs=0.02)
@@ -83,12 +83,12 @@ class TestDekompozycjaMundlaka:
 
 
 class TestTestMundlaka:
-    """Testy dotyczą opakowania, nie samej ekonometrii.
+    """Testy dotycza opakowania, nie samej ekonometrii.
 
-    Czy test Mundlaka wykryje skorelowany efekt klubu, zależy od mocy na danym
-    zbiorze, a nie od poprawności kodu - przy regresorze o małym rozrzucie
-    wewnątrzklubowym `log_wage` i `mean_log_wage` są niemal współliniowe i test
-    traci moc. Sprawdzamy więc, że nakłada właściwe restrykcje i że daje to
+    Czy test Mundlaka wykryje skorelowany efekt klubu, zalezy od mocy na danym
+    zbiorze, a nie od poprawnosci kodu - przy regresorze o malym rozrzucie
+    wewnatrzklubowym `log_wage` i `mean_log_wage` sa niemal wspolliniowe i test
+    traci moc. Sprawdzamy wiec, ze naklada wlasciwe restrykcje i ze daje to
     samo, co policzony wprost test Walda.
     """
 
@@ -104,7 +104,7 @@ class TestTestMundlaka:
         assert p == pytest.approx(float(wprost.pvalue))
 
     def test_naklada_restrykcje_na_podane_wyrazy(self, m_cre):
-        """Zawężenie restrykcji do jednego wyrazu musi zmienić statystykę."""
+        """Zawezenie restrykcji do jednego wyrazu musi zmienic statystyke."""
         chi2_oba, _ = mundlak_test(m_cre)
         chi2_jeden, _ = mundlak_test(m_cre, terms=("mean_log_wage",))
         assert chi2_oba != pytest.approx(chi2_jeden)
@@ -116,7 +116,7 @@ class TestTestMundlaka:
 
 
 class TestSpecyfikacje:
-    """Czy formuły zawierają dokładnie to, co obiecuje ich opis."""
+    """Czy formuly zawieraja dokladnie to, co obiecuje ich opis."""
 
     def test_model_statyczny_nie_zawiera_opoznionej_zmiennej(self, m_static):
         assert "Y_lag" not in m_static.params.index
@@ -131,7 +131,7 @@ class TestSpecyfikacje:
             assert any("C(season)" in n for n in res.params.index)
 
     def test_model_per_liga_nie_ma_efektu_stalego_ligi(self, est):
-        """Na podpróbie jednej ligi efekt stały ligi byłby nieidentyfikowalny."""
+        """Na podprobie jednej ligi efekt staly ligi bylby nieidentyfikowalny."""
         res = next(iter(fit_per_league(est).values()))
         assert not any("C(league)" in n for n in res.params.index)
 
@@ -141,7 +141,7 @@ class TestSpecyfikacje:
 
 class TestZaleznoscStanu:
     def test_zaleznosc_stanu_wychodzi_dodatnia_gdy_jest_w_danych(self, m_cre):
-        """Przy silnej zależności stanu w procesie generującym Y_lag musi zapalić."""
+        """Przy silnej zaleznosci stanu w procesie generujacym Y_lag musi zapalic."""
         assert m_cre.params["Y_lag"] > 0
         assert m_cre.pvalues["Y_lag"] < 0.05
 
@@ -152,23 +152,23 @@ class TestLinkTest:
         assert 0 <= p <= 1
 
     def test_poprawna_postac_funkcyjna_nie_zapala(self, m_cre, est):
-        """Dane generowane probitem, więc kwadrat predykcji ma być nieistotny."""
+        """Dane generowane probitem, wiec kwadrat predykcji ma byc nieistotny."""
         assert link_test(m_cre, est) > 0.05
 
 
 class TestRoznicowanieLig:
     def test_zwraca_wyrazy_interakcyjne(self, est):
         _, _, terms = league_difference_test(fit_interaction(est))
-        # Cztery ligi, więc trzy interakcje względem ligi bazowej.
+        # Cztery ligi, wiec trzy interakcje wzgledem ligi bazowej.
         assert len(terms) == 3
         assert all("Y_lag:" in t for t in terms)
 
     def test_zgadza_sie_z_testem_walda_policzonym_wprost(self, est):
-        """Jak przy teście Mundlaka: sprawdzamy opakowanie, nie moc testu.
+        """Jak przy tescie Mundlaka: sprawdzamy opakowanie, nie moc testu.
 
-        Czy H0 zostanie odrzucona na konkretnym zbiorze, zależy od losowania -
-        test prawdziwej hipotezy zerowej zapala w około pięciu procentach prób,
-        więc oczekiwanie `p > 0,05` dawałoby test chwiejny.
+        Czy H0 zostanie odrzucona na konkretnym zbiorze, zalezy od losowania -
+        test prawdziwej hipotezy zerowej zapala w okolo pieciu procentach prob,
+        wiec oczekiwanie `p > 0,05` dawaloby test chwiejny.
         """
         res = fit_interaction(est)
         chi2, p, terms = league_difference_test(res)
@@ -191,11 +191,11 @@ class TestMacierzPrzejsc:
         assert np.allclose(tab.sum(axis=1), 1.0)
 
     def test_trwalosc_widac_na_diagonali(self, panel):
-        """Przy dodatniej zależności stanu P(1|1) > P(1|0)."""
+        """Przy dodatniej zaleznosci stanu P(1|1) > P(1|0)."""
         tab = transition_matrix(panel)
         assert tab.loc[1.0, 1] > tab.loc[0.0, 1]
 
     def test_pierwsze_obserwacje_sa_pomijane(self, panel):
-        """Wiersze z brakiem w Y_lag nie mogą wchodzić do macierzy."""
+        """Wiersze z brakiem w Y_lag nie moga wchodzic do macierzy."""
         tab = transition_matrix(panel)
         assert set(tab.index) == {0.0, 1.0}

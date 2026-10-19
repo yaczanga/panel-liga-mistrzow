@@ -19,8 +19,8 @@ Y_lag
 Dep. Variable:                      Y   No. Observations:                  726
 Model:                         Probit   Df Residuals:                      709
 Method:                           MLE   Df Model:                           16
-Date:                Fri, 02 Oct 2026   Pseudo R-squ.:                  0.5029
-Time:                        18:13:14   Log-Likelihood:                -189.70
+Date:                Mon, 19 Oct 2026   Pseudo R-squ.:                  0.5029
+Time:                        21:07:32   Log-Likelihood:                -189.70
 converged:                       True   LL-Null:                       -381.62
 Covariance Type:              cluster   LLR p-value:                 8.807e-72
 ===============================================================================================
@@ -52,8 +52,8 @@ Pseudo R2 = 0.503; LLR p-value = 8.81e-72
 Dep. Variable:                      Y   No. Observations:                  726
 Model:                         Probit   Df Residuals:                      712
 Method:                           MLE   Df Model:                           13
-Date:                Fri, 02 Oct 2026   Pseudo R-squ.:                  0.4500
-Time:                        18:13:14   Log-Likelihood:                -209.89
+Date:                Mon, 19 Oct 2026   Pseudo R-squ.:                  0.4500
+Time:                        21:07:32   Log-Likelihood:                -209.89
 converged:                       True   LL-Null:                       -381.62
 Covariance Type:              cluster   LLR p-value:                 1.835e-65
 ===============================================================================================

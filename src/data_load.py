@@ -1,6 +1,6 @@
-"""Wczytanie danych źródłowych: Transfermarkt (mecze, wyceny, transfery) i płace fbref.
+"""Wczytanie danych zrodlowych: Transfermarkt (mecze, wyceny, transfery) i place fbref.
 
-Moduł tylko czyta i sprowadza do wspólnego formatu. Agregacja do panelu
+Modul tylko czyta i sprowadza do wspolnego formatu. Agregacja do panelu
 klub x sezon jest w `pre_processing`.
 """
 
@@ -10,7 +10,7 @@ import pandas as pd
 
 
 def find_project_root(start: Path | None = None) -> Path:
-    """Korzeń projektu wyznaczony przez szukanie w górę pliku src/data_load.py."""
+    """Korzen projektu wyznaczony przez szukanie w gore pliku src/data_load.py."""
     root = (start or Path.cwd()).resolve()
     while not (root / "src" / "data_load.py").is_file():
         if root == root.parent:
@@ -27,14 +27,14 @@ PROCESSED = PROJECT_ROOT / "data" / "processed"
 
 WAGE_FILE = RAW / "place_top4_ligi_2013_2023.csv"
 
-# Zakres: sezony 2013/14 - 2023/24, oznaczane rokiem rozpoczęcia.
+# Zakres: sezony 2013/14 - 2023/24, oznaczane rokiem rozpoczecia.
 SEASON_MIN, SEASON_MAX = 2013, 2023
 
-# Wyceny i stan kadry brane na 1 lipca, czyli początek sezonu - przed rundą
-# transferową, która jest już reakcją na wynik poprzedniego sezonu.
+# Wyceny i stan kadry brane na 1 lipca, czyli poczatek sezonu - przed runda
+# transferowa, ktora jest juz reakcja na wynik poprzedniego sezonu.
 SEASON_START_MONTH = 7
 
-# Okno letniego transferowego: czerwiec-sierpień roku rozpoczęcia sezonu.
+# Okno letniego transferowego: czerwiec-sierpien roku rozpoczecia sezonu.
 SUMMER_WINDOW = (6, 8)
 
 # Liga fbref -> competition_id Transfermarkt.
@@ -46,12 +46,12 @@ LEAGUES = {
 }
 ID2LEAGUE = {v: k for k, v in LEAGUES.items()}
 
-# Rozgrywki Ligi Mistrzów: faza główna i kwalifikacje.
+# Rozgrywki Ligi Mistrzow: faza glowna i kwalifikacje.
 CL_COMPETITIONS = ["CL", "CLQ"]
 
-# Mapowanie nazw klubów z fbref na club_id Transfermarkt, zweryfikowane ręcznie
-# po slugach. Nazwy w obu źródłach różnią się skrótami ("Manchester Utd" vs
-# "Manchester United"), więc automatyczne dopasowanie po nazwie zawodzi.
+# Mapowanie nazw klubow z fbref na club_id Transfermarkt, zweryfikowane recznie
+# po slugach. Nazwy w obu zrodlach roznia sie skrotami ("Manchester Utd" vs
+# "Manchester United"), wiec automatyczne dopasowanie po nazwie zawodzi.
 WAGE2ID = {
     "Premier_League": {
         "Arsenal": 11, "Aston Villa": 405, "Bournemouth": 989, "Brentford": 1148,
@@ -101,17 +101,17 @@ WAGE2ID = {
 
 
 def load_games() -> pd.DataFrame:
-    """Wszystkie mecze - potrzebne także poza czterema ligami, dla LM."""
+    """Wszystkie mecze - potrzebne takze poza czterema ligami, dla LM."""
     return pd.read_csv(RAW / "games.csv")
 
 
 def load_club_games() -> pd.DataFrame:
-    """Mecze z perspektywy klubu: gole własne i przeciwnika, wynik, trener."""
+    """Mecze z perspektywy klubu: gole wlasne i przeciwnika, wynik, trener."""
     return pd.read_csv(RAW / "club_games.csv")
 
 
 def load_valuations() -> pd.DataFrame:
-    """Historia wycen rynkowych zawodników (EUR), z datą wyceny."""
+    """Historia wycen rynkowych zawodnikow (EUR), z data wyceny."""
     return pd.read_csv(RAW / "player_valuations.csv", parse_dates=["date"])
 
 
@@ -121,7 +121,7 @@ def load_transfers() -> pd.DataFrame:
 
 
 def load_wages() -> pd.DataFrame:
-    """Roczne funduszu płac klubów z fbref, zebrane przez notebooks/01."""
+    """Roczne funduszu plac klubow z fbref, zebrane przez notebooks/01."""
     if not WAGE_FILE.is_file():
         raise FileNotFoundError(
             f"Brak {WAGE_FILE}. Uruchom notebooks/01_pobranie_plac.ipynb."
@@ -130,7 +130,7 @@ def load_wages() -> pd.DataFrame:
 
 
 def league_games(games: pd.DataFrame) -> pd.DataFrame:
-    """Mecze czterech lig w analizowanym zakresie sezonów."""
+    """Mecze czterech lig w analizowanym zakresie sezonow."""
     return games[
         games["competition_id"].isin(LEAGUES.values())
         & games["season"].between(SEASON_MIN, SEASON_MAX)
