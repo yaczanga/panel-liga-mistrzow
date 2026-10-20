@@ -1,5 +1,7 @@
 # Trwałość kwalifikacji do Ligi Mistrzów - dynamiczny probit CRE
 
+![testy](https://github.com/yaczanga/panel-liga-mistrzow/actions/workflows/testy.yml/badge.svg)
+
 Projekt rozdziela dwa źródła tego, że te same kluby regularnie awansują do Ligi Mistrzów: trwałość samej pozycji oraz trwałą zamożność klubu. Zmienna objaśniana jest binarna, panel niezbalansowany, a efekt klubu skorelowany z regresorami, więc zastosowano dynamiczny probit z korelowanymi efektami losowymi w ujęciu Wooldridge'a - z opóźnioną zmienną zależną, warunkiem początkowym i średnimi wewnątrzklubowymi.
 
 Wynikiem jest rozróżnienie, którego model statyczny nie wykonuje: bieżący fundusz płac nie wyjaśnia awansu, natomiast trwały poziom funduszu płac i sam fakt awansu rok wcześniej - tak.
